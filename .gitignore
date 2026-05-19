@@ -1,0 +1,129 @@
+# =============================================================================
+# .gitignore — Strava Analytics Project
+# =============================================================================
+# Este arquivo que impede informações sensíveis e arquivos desnecessários
+# sejam enviados para o GitHub.
+
+.env                    # Variáveis de ambiente com tokens e senhas
+.env.local
+.env.*.local
+*.env
+
+# Tokens e credenciais
+*token*
+*secret*
+*password*
+credentials.json
+config.json
+
+# ---------------------------------------------------------------------------
+# 🗄️ BANCO DE DADOS (não commitar dados pessoais)
+# ---------------------------------------------------------------------------
+
+*.db                    # SQLite databases
+*.db-journal
+*.db-wal
+*.db-shm
+strava.db*
+
+# ---------------------------------------------------------------------------
+# 📊 RELATÓRIOS E OUTPUTS GERADOS
+# ---------------------------------------------------------------------------
+
+*.pdf                   # Relatórios PDF gerados
+reports/
+outputs/
+*.log                   # Logs de execução
+
+# ---------------------------------------------------------------------------
+# 🐍 PYTHON
+# ---------------------------------------------------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# ---------------------------------------------------------------------------
+# 💻 SISTEMAS OPERACIONAIS
+# ---------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ---------------------------------------------------------------------------
+# 📦 DEPENDÊNCIAS E CACHE
+# ---------------------------------------------------------------------------
+
+node_modules/
+.npm
+.cache/
+
+# ---------------------------------------------------------------------------
+# 🧪 TESTES E COBERTURA
+# ---------------------------------------------------------------------------
+
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# ---------------------------------------------------------------------------
+# 📁 DADOS TEMPORÁRIOS
+# ---------------------------------------------------------------------------
+
+temp/
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo

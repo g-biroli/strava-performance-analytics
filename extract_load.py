@@ -247,6 +247,9 @@ def refresh_access_token():
 
 def fetch_athlete(conn: sqlite3.Connection):
     r = requests.get(f"{BASE_URL}/athlete", headers=get_headers())
+    if r.status_code == 401:
+        refresh_access_token()
+        r = requests.get(f"{BASE_URL}/athlete", headers=get_headers())
     r.raise_for_status()
     a = r.json()
     conn.execute("""
@@ -538,6 +541,9 @@ def extract_all_activities(conn: sqlite3.Connection, load_streams: bool = False)
 if __name__ == "__main__":
     log.info(f"Diretório do projeto : {BASE_DIR}")
     log.info(f"Banco de dados       : {DB_PATH}")
+
+    # Renova o token antes de qualquer requisição (expira em 6h)
+    refresh_access_token()
 
     conn = create_database()
     fetch_athlete(conn)

@@ -8,23 +8,21 @@
 .env.local
 .env.*.local
 *.env
+!.env.example           # Template SEM valores reais — pode commitar
 
 # Tokens e credenciais
-*token*
-*secret*
-*password*
 credentials.json
 config.json
 
 # ---------------------------------------------------------------------------
-# 🗄️ BANCO DE DADOS (não commitar dados pessoais)
+# 🗄️ BANCO DE DADOS E DADOS GERADOS (não commitar dados pessoais)
 # ---------------------------------------------------------------------------
 
-*.db                    # SQLite databases
+data/                   # Pasta com banco de dados, logs e PDFs gerados
+*.db                    # SQLite databases avulsos
 *.db-journal
 *.db-wal
 *.db-shm
-strava.db*
 
 # ---------------------------------------------------------------------------
 # 📊 RELATÓRIOS E OUTPUTS GERADOS

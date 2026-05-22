@@ -1,0 +1,6 @@
+Precisamos:
+
+- Arrumar o .gitignore do projeto
+- Ajustar o projeto para ficar igual ao projeto do repositorio Python 
+- Deixar o projeto desse repositorio proprio identico ao projeto antes iniciado.
+- Continuar o desenvolvimento

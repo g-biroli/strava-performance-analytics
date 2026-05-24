@@ -29,3 +29,20 @@
 2026-05-22 18:07:21,624 [WARNING] Rate limit — aguardando 60s...
 2026-05-22 18:08:22,243 [WARNING] Rate limit — aguardando 60s...
 2026-05-22 18:09:22,791 [WARNING] Rate limit — aguardando 60s...
+2026-05-24 20:48:10,997 [INFO] Diretório do projeto : C:\Users\gabri\OneDrive\Belgeler\GitHub\strava-performance-analytics
+2026-05-24 20:48:11,005 [INFO] Banco de dados       : C:\Users\gabri\OneDrive\Belgeler\GitHub\strava-performance-analytics\data\strava.db
+2026-05-24 20:48:11,901 [INFO] Access Token renovado com sucesso.
+2026-05-24 20:48:11,946 [INFO] Banco de dados pronto em: C:\Users\gabri\OneDrive\Belgeler\GitHub\strava-performance-analytics\data\strava.db
+2026-05-24 20:48:12,712 [INFO] Atleta carregado: Gabriel Biroli
+2026-05-24 20:48:12,714 [INFO] ============================================================
+2026-05-24 20:48:12,714 [INFO] Extração iniciada | streams=False
+2026-05-24 20:48:12,714 [INFO] ============================================================
+2026-05-24 20:48:19,546 [INFO] Pág   1: 200 recebidas |   1 novas | 199 skip
+2026-05-24 20:48:25,464 [INFO] Pág   2: 151 recebidas |   0 novas | 151 skip
+2026-05-24 20:48:27,355 [INFO] Paginação concluída na página 3.
+2026-05-24 20:48:27,355 [INFO] 
+============================================================
+2026-05-24 20:48:27,355 [INFO]   ✅ Atividades novas : 1
+2026-05-24 20:48:27,356 [INFO]   ⭐  Já existiam      : 350
+2026-05-24 20:48:27,356 [INFO] ============================================================
+2026-05-24 20:48:27,383 [INFO] Pipeline finalizado.

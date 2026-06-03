@@ -22,6 +22,7 @@ streamlit-folium==0.21.0
 
 # Relatório e e-mail
 reportlab==4.2.2
+kaleido==0.2.1
 schedule==1.2.2
 
 # GPS

@@ -18,18 +18,20 @@ def fmt_pace(p) -> str:
 
 
 def kpi(label: str, value: str, sub: str = "", swim: bool = False, walk: bool = False):
+    """Renders a styled KPI card. Fixed HTML generation — no nested f-string conditional."""
     cls = "kpi-card swim" if swim else ("kpi-card walk" if walk else "kpi-card")
+    sub_html = f'<div class="kpi-sub">{sub}</div>' if sub else ""
     st.markdown(
-        f"""<div class="{cls}">
-            <div class="kpi-label">{label}</div>
-            <div class="kpi-value">{value}</div>
-            {'<div class="kpi-sub">' + sub + '</div>' if sub else ''}
-        </div>""",
+        f'<div class="{cls}">'
+        f'<div class="kpi-label">{label}</div>'
+        f'<div class="kpi-value">{value}</div>'
+        f'{sub_html}'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
 
-def empty_fig(msg: str = "Sem dados para o período selecionado") -> go.Figure:
+def empty_fig(msg: str = "No data available for the selected period") -> go.Figure:
     fig = go.Figure()
     fig.add_annotation(
         text=msg, xref="paper", yref="paper", x=0.5, y=0.5,
@@ -48,13 +50,15 @@ def apply_base_layout(
     title: str = "",
     title_color: str = GRAY_SECONDARY,
 ) -> go.Figure:
+    # t=68 when title is set so legend (y=1.01) and title don't overlap
+    top_margin = 68 if title else 12
     fig.update_layout(
         height=height,
         title=dict(text=title, font=dict(size=14, color=title_color), x=0),
         paper_bgcolor=CHART_BG,
         plot_bgcolor=CHART_BG,
         font=dict(family="sans-serif", color=GRAY_SECONDARY),
-        margin=dict(l=10, r=10, t=40 if title else 10, b=10),
+        margin=dict(l=10, r=10, t=top_margin, b=10),
         legend=dict(
             bgcolor="rgba(0,0,0,0)", orientation="h",
             yanchor="bottom", y=1.01, xanchor="left", x=0,
@@ -65,37 +69,16 @@ def apply_base_layout(
     return fig
 
 
-def _stub_pdf(title: str) -> bytes:
-    content = (
-        f"%PDF-1.4\n"
-        f"1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
-        f"2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
-        f"3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]"
-        f"/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n"
-        f"4 0 obj<</Length 80>>stream\nBT /F1 18 Tf 50 750 Td ({title}) Tj ET\nendstream\nendobj\n"
-        f"5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n"
-        f"xref\n0 6\n0000000000 65535 f\ntrailer<</Size 6/Root 1 0 R>>\n%%EOF"
-    )
-    return content.encode("latin-1")
-
-
-def date_filter_with_download(key_prefix: str, default_days: int, pdf_title: str):
+def date_filter_with_download(key_prefix: str, default_days: int = 0, pdf_title: str = ""):
+    """Returns (d_start, d_end). Default start = earliest date in DB (fixes missing data bug)."""
+    from utils.db import load_min_date
     today = pd.Timestamp.today().normalize()
-    default_start = today - pd.Timedelta(days=default_days)
-    c1, c2, c3, _ = st.columns([1, 1, 1, 1])
+    min_date = pd.Timestamp(load_min_date())
+    c1, c2, _ = st.columns([1, 1, 2])
     with c1:
-        d_start = st.date_input("De", value=default_start.date(), key=f"{key_prefix}_start")
+        d_start = st.date_input("From", value=min_date.date(), key=f"{key_prefix}_start")
     with c2:
-        d_end = st.date_input("Até", value=today.date(), key=f"{key_prefix}_end")
-    with c3:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.download_button(
-            label="⬇ Baixar PDF",
-            data=_stub_pdf(pdf_title),
-            file_name=f"relatorio_{key_prefix}.pdf",
-            mime="application/pdf",
-            key=f"{key_prefix}_pdf",
-        )
+        d_end = st.date_input("To", value=today.date(), key=f"{key_prefix}_end")
     return str(d_start), str(d_end)
 
 
@@ -110,7 +93,7 @@ def donut_goal(
     remaining = max(goal - current, 0)
     fig = go.Figure(go.Pie(
         values=[current, remaining],
-        labels=["Realizado", "Restante"],
+        labels=["Achieved", "Remaining"],
         hole=0.65,
         marker=dict(colors=[color_fill, GRAY_ICE], line=dict(color="#ffffff", width=2)),
         textinfo="none",
@@ -127,3 +110,70 @@ def donut_goal(
         paper_bgcolor=CHART_BG, margin=dict(l=0, r=0, t=10, b=0),
     )
     return fig
+
+
+def _pdf_download_button(
+    title: str,
+    d_start: str,
+    d_end: str,
+    kpis: list,
+    figs: list,
+    key_prefix: str,
+    accent_hex: str = "#FC4C02",
+) -> None:
+    """Lazy PDF generation: only calls kaleido when the user clicks Generate.
+    Stores bytes in session_state to survive reruns without regenerating.
+    """
+    from utils.pdf import build_pdf
+    ss_key = f"_pdf_bytes_{key_prefix}"
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        if st.button("📄 Generate PDF Report", key=f"btn_gen_{key_prefix}"):
+            with st.spinner("Rendering charts and building PDF…"):
+                try:
+                    st.session_state[ss_key] = build_pdf(
+                        title, d_start, d_end, kpis, figs, accent_hex=accent_hex,
+                    )
+                    st.success("PDF ready — click Download below.")
+                except Exception as exc:
+                    st.error(f"PDF generation failed: {exc}")
+                    st.session_state[ss_key] = None
+    with c2:
+        pdf_data = st.session_state.get(ss_key)
+        if pdf_data:
+            st.download_button(
+                label="⬇ Download PDF Report",
+                data=pdf_data,
+                file_name=f"{key_prefix}_{d_start}_{d_end}.pdf",
+                mime="application/pdf",
+                key=f"dl_{key_prefix}",
+            )
+
+
+_SE_BRAZIL_LAT = -23.5505   # São Paulo — default map center
+_SE_BRAZIL_LON = -46.6333
+
+
+def render_activity_map(
+    df_coords: pd.DataFrame,
+    accent_color: str = ORANGE,
+    zoom: int = 9,
+) -> None:
+    """Renders an activity map using st.map (pydeck/deck.gl — CSP-safe).
+    Always starts centered on Southeast Brazil (São Paulo area).
+    """
+    if df_coords.empty or "lat" not in df_coords.columns or len(df_coords) == 0:
+        # Show SE Brazil even with no data so the user sees the correct region
+        dummy = pd.DataFrame({"lat": [_SE_BRAZIL_LAT], "lon": [_SE_BRAZIL_LON]})
+        st.map(dummy, latitude="lat", longitude="lon", zoom=zoom,
+               use_container_width=True)
+        st.caption("No GPS data recorded for these activities in this period.")
+        return
+    st.map(
+        df_coords,
+        latitude="lat",
+        longitude="lon",
+        color=accent_color,
+        zoom=zoom,
+        use_container_width=True,
+    )

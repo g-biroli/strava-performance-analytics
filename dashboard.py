@@ -17,24 +17,20 @@ st.set_page_config(
 inject_css()
 
 tab_home, tab_overview, tab_run, tab_swim, tab_walk = st.tabs([
-    "🏠 Início",
-    "📊 Visão Geral",
-    "🏃‍♂️ Corrida",
-    "🏊‍♂️ Natação",
-    "🥾 Caminhada",
+    "🏠 Home",
+    "📊 Overview",
+    "🏃‍♂️ Running",
+    "🏊‍♂️ Swimming",
+    "🥾 Walking",
 ])
 
 with tab_home:
     render_home()
-
 with tab_overview:
     render_overview()
-
 with tab_run:
     render_running()
-
 with tab_swim:
     render_swimming()
-
 with tab_walk:
     render_walking()

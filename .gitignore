@@ -18,11 +18,14 @@ config.json
 # 🗄️ BANCO DE DADOS E DADOS GERADOS (não commitar dados pessoais)
 # ---------------------------------------------------------------------------
 
-data/                   # Pasta com banco de dados, logs e PDFs gerados
-*.db                    # SQLite databases avulsos
+data/
+*.db
 *.db-journal
 *.db-wal
 *.db-shm
+
+# ABRIR EXCEÇÃO PARA O BANCO DO PORTFÓLIO IR AO GITHUB:
+!data/strava.db
 
 # ---------------------------------------------------------------------------
 # 📊 RELATÓRIOS E OUTPUTS GERADOS

@@ -107,12 +107,11 @@ def render_overview() -> None:
         st.markdown(f"**Time Goal — 5h per week** ({week_h:.1f}h completed)")
         fig_t = donut_goal(week_h, 5.0, "hours / 5h", color_fill=ORANGE, height=220)
         st.plotly_chart(fig_t, use_container_width=True)
-        figs.append(("Weekly Goal — Time (5h)", fig_t))
     with m2:
         st.markdown(f"**Frequency Goal — 5 activities** ({week_acts} completed)")
         fig_f = donut_goal(float(week_acts), 5.0, "activities / 5", color_fill=SUNSET, height=220)
         st.plotly_chart(fig_f, use_container_width=True)
-        figs.append(("Weekly Goal — Frequency (5 activities)", fig_f))
+    figs.append([("Weekly Goal — Time (5h)", fig_t), ("Weekly Goal — Frequency (5 activities)", fig_f)])
 
     st.divider()
 
@@ -166,7 +165,6 @@ def render_overview() -> None:
             yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
         )
         st.plotly_chart(fig_heat, use_container_width=True)
-        figs.append(("Activity Calendar", fig_heat))
 
     # ── Sport mix donut ───────────────────────────────────────────────────────
     with col_donut:
@@ -192,7 +190,7 @@ def render_overview() -> None:
             paper_bgcolor=CHART_BG, margin=dict(l=0, r=0, t=0, b=0),
         )
         st.plotly_chart(fig_donut, use_container_width=True)
-        figs.append(("Sport Mix", fig_donut))
+    figs.append([("Activity Calendar", fig_heat), ("Sport Mix", fig_donut)])
 
     # ── Monthly volume by sport ────────────────────────────────────────────────
     st.markdown(

@@ -165,7 +165,6 @@ def render_swimming() -> None:
             font=dict(color=GRAY_SECONDARY), margin=dict(l=10, r=10, t=10, b=30),
         )
         st.plotly_chart(fig_freq, use_container_width=True)
-        figs.append(("Pool Session Frequency", fig_freq))
 
     with col_pace_dist:
         st.markdown(
@@ -196,7 +195,7 @@ def render_swimming() -> None:
             font=dict(color=GRAY_SECONDARY), margin=dict(l=10, r=10, t=10, b=30),
         )
         st.plotly_chart(fig_scatter_s, use_container_width=True)
-        figs.append(("Pace by Distance Swum", fig_scatter_s))
+    figs.append([("Pool Session Frequency", fig_freq), ("Pace by Distance Swum", fig_scatter_s)])
 
     # ── Pace evolution ~1000m sessions ────────────────────────────────────────
     if not df_1k_swim.empty:

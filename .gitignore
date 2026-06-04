@@ -18,13 +18,13 @@ config.json
 # 🗄️ BANCO DE DADOS E DADOS GERADOS (não commitar dados pessoais)
 # ---------------------------------------------------------------------------
 
-data/
-*.db
+data/*
 *.db-journal
 *.db-wal
 *.db-shm
 
 # ABRIR EXCEÇÃO PARA O BANCO DO PORTFÓLIO IR AO GITHUB:
+# data/* ignora conteúdo mas permite negações (data/ bloquearia a negação abaixo)
 !data/strava.db
 
 # ---------------------------------------------------------------------------

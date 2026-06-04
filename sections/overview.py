@@ -6,6 +6,7 @@ import streamlit as st
 from utils.db import load_activity_coords, load_all_activities
 from utils.helpers import (
     _pdf_download_button,
+    _today_local,
     apply_base_layout,
     date_filter_with_download,
     donut_goal,
@@ -97,7 +98,7 @@ def render_overview() -> None:
 
     # ── Weekly goals ──────────────────────────────────────────────────────────
     st.markdown('<div class="section-title">Current Week Goals</div>', unsafe_allow_html=True)
-    week_str  = pd.Timestamp.today().strftime("%Y-W%V")
+    week_str  = _today_local().strftime("%Y-W%V")
     df_week   = df_all[df_all["year_week"] == week_str] if "year_week" in df_all.columns else pd.DataFrame()
     week_h    = df_week["duration_h"].sum() if not df_week.empty else 0.0
     week_acts = len(df_week) if not df_week.empty else 0

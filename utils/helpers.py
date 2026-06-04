@@ -1,9 +1,24 @@
+from datetime import timedelta, timezone
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
 from utils.palette import CHART_BG, GRAY_ICE, GRAY_SECONDARY, GRID_COLOR, ORANGE, SUNSET
+
+# Brazil abolished DST in 2019 — São Paulo is permanently UTC-3
+_BRT = timezone(timedelta(hours=-3))
+
+
+def _today_local() -> pd.Timestamp:
+    """Today at midnight in Brasília Time (UTC-3), as a timezone-naive Timestamp.
+
+    Using pd.Timestamp.today() on cloud servers (UTC) causes a 3-hour window
+    every Sunday night where the server thinks it's already next ISO week,
+    showing 0 activities in 'current week' widgets. This function is the fix.
+    """
+    return pd.Timestamp.now(tz=_BRT).normalize().tz_localize(None)
 
 
 def fmt_pace(p) -> str:
@@ -72,7 +87,7 @@ def apply_base_layout(
 def date_filter_with_download(key_prefix: str, default_days: int = 0, pdf_title: str = ""):
     """Returns (d_start, d_end). Default start = earliest date in DB (fixes missing data bug)."""
     from utils.db import load_min_date
-    today = pd.Timestamp.today().normalize()
+    today    = _today_local()
     min_date = pd.Timestamp(load_min_date())
     c1, c2, _ = st.columns([1, 1, 2])
     with c1:
@@ -136,19 +151,41 @@ def _pdf_download_button(
     key_prefix: str = "",
     accent_hex: str = "#FC4C02",
 ) -> None:
-    """PDF download with all section charts rendered via kaleido."""
-    from utils.pdf import build_pdf
-    try:
-        pdf_bytes = build_pdf(title, d_start, d_end, kpis, fig_sections=figs, accent_hex=accent_hex)
-        st.download_button(
-            label="⬇ Download PDF Report",
-            data=pdf_bytes,
-            file_name=f"{key_prefix}_{d_start}_{d_end}.pdf",
-            mime="application/pdf",
-            key=f"dl_{key_prefix}",
-        )
-    except Exception as exc:
-        st.error(f"Could not generate PDF: {exc}")
+    """
+    Two-step PDF: 'Prepare' button triggers kaleido rendering on demand,
+    then 'Download' button appears. Avoids blocking every page render.
+    """
+    pdf_key    = f"_pdf_bytes_{key_prefix}"
+    params_key = f"_pdf_params_{key_prefix}"
+
+    # Invalidate cached PDF when the date range changes
+    current_params = (d_start, d_end)
+    if st.session_state.get(params_key) != current_params:
+        st.session_state.pop(pdf_key, None)
+        st.session_state[params_key] = current_params
+
+    col_gen, col_dl = st.columns([1, 2])
+    with col_gen:
+        if st.button("🔄 Prepare PDF Report", key=f"prep_{key_prefix}"):
+            with st.spinner("Generating PDF with all charts…"):
+                from utils.pdf import build_pdf
+                try:
+                    st.session_state[pdf_key] = build_pdf(
+                        title, d_start, d_end, kpis,
+                        fig_sections=figs, accent_hex=accent_hex,
+                    )
+                except Exception as exc:
+                    st.error(f"Could not generate PDF: {exc}")
+
+    with col_dl:
+        if pdf_key in st.session_state:
+            st.download_button(
+                label="⬇ Download PDF Report",
+                data=st.session_state[pdf_key],
+                file_name=f"{key_prefix}_{d_start}_{d_end}.pdf",
+                mime="application/pdf",
+                key=f"dl_{key_prefix}",
+            )
 
 
 _SE_BRAZIL_LAT = -23.5505   # São Paulo — default map center

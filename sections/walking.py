@@ -5,6 +5,7 @@ import streamlit as st
 from utils.db import load_all_activities
 from utils.helpers import (
     _pdf_download_button,
+    _today_local,
     apply_base_layout,
     date_filter_with_download,
     donut_goal,
@@ -63,7 +64,7 @@ def render_walking() -> None:
 
     # ── Weekly goal ───────────────────────────────────────────────────────────
     st.markdown('<div class="section-title walk">Weekly Walking Goal</div>', unsafe_allow_html=True)
-    week_str_w = pd.Timestamp.today().strftime("%Y-W%V")
+    week_str_w = _today_local().strftime("%Y-W%V")
     df_week_w  = df_walk[df_walk["year_week"] == week_str_w] if "year_week" in df_walk.columns else pd.DataFrame()
     week_km_w  = df_week_w["dist_km"].sum() if not df_week_w.empty else 0.0
 

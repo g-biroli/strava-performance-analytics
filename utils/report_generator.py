@@ -11,7 +11,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from utils.db import load_all_activities, load_min_date
-from utils.helpers import apply_base_layout, donut_goal, fmt_duration, fmt_pace
+from utils.helpers import _today_local, apply_base_layout, donut_goal, fmt_duration, fmt_pace
 from utils.palette import (
     BLUE_DEPTH,
     CHART_BG,
@@ -78,7 +78,7 @@ def build_overview_report(d_start: str = None, d_end: str = None):
         figs.append(("Top 3 Sports", fig_top3))
 
     # Weekly goals — pair
-    week_str = pd.Timestamp.today().strftime("%Y-W%V")
+    week_str = _today_local().strftime("%Y-W%V")
     df_week  = df[df["year_week"] == week_str] if "year_week" in df.columns else pd.DataFrame()
     week_h   = df_week["duration_h"].sum() if not df_week.empty else 0.0
     week_n   = len(df_week) if not df_week.empty else 0
@@ -207,7 +207,7 @@ def build_running_report(d_start: str = None, d_end: str = None):
     figs = []
 
     # Weekly goal
-    week_str = pd.Timestamp.today().strftime("%Y-W%V")
+    week_str = _today_local().strftime("%Y-W%V")
     df_week  = df_run[df_run["year_week"] == week_str] if "year_week" in df_run.columns else pd.DataFrame()
     week_km  = df_week["dist_km"].sum() if not df_week.empty else 0.0
     figs.append(("Weekly Running Goal (5 km)", donut_goal(week_km, 5.0, "km / 5km", color_fill=SUNSET, height=240)))
@@ -366,7 +366,7 @@ def build_swimming_report(d_start: str = None, d_end: str = None):
     figs = []
 
     # Weekly goal
-    week_str = pd.Timestamp.today().strftime("%Y-W%V")
+    week_str = _today_local().strftime("%Y-W%V")
     df_week  = df[df["year_week"] == week_str] if "year_week" in df.columns else pd.DataFrame()
     week_km  = df_week["dist_km"].sum() if not df_week.empty else 0.0
     figs.append(("Weekly Swimming Goal (2 km)", donut_goal(week_km, 2.0, "km / 2km", color_fill=SWIM_DARK, height=240)))
@@ -505,7 +505,7 @@ def build_walking_report(d_start: str = None, d_end: str = None):
     figs = []
 
     # Weekly goal
-    week_str = pd.Timestamp.today().strftime("%Y-W%V")
+    week_str = _today_local().strftime("%Y-W%V")
     df_week  = df[df["year_week"] == week_str] if "year_week" in df.columns else pd.DataFrame()
     week_km  = df_week["dist_km"].sum() if not df_week.empty else 0.0
     figs.append((

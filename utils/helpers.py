@@ -132,14 +132,14 @@ def _pdf_download_button(
     d_start: str,
     d_end: str,
     kpis: list,
-    figs: list = None,       # accepted for API compatibility, not used
+    figs: list = None,
     key_prefix: str = "",
     accent_hex: str = "#FC4C02",
 ) -> None:
-    """Single-click PDF download — generates instantly (no kaleido)."""
+    """PDF download with all section charts rendered via kaleido."""
     from utils.pdf import build_pdf
     try:
-        pdf_bytes = build_pdf(title, d_start, d_end, kpis, accent_hex=accent_hex)
+        pdf_bytes = build_pdf(title, d_start, d_end, kpis, fig_sections=figs, accent_hex=accent_hex)
         st.download_button(
             label="⬇ Download PDF Report",
             data=pdf_bytes,

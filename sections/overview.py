@@ -10,6 +10,7 @@ from utils.helpers import (
     date_filter_with_download,
     donut_goal,
     empty_fig,
+    fmt_duration,
     kpi,
     render_activity_map,
 )
@@ -195,31 +196,31 @@ def render_overview() -> None:
 
     # ── Monthly volume by sport ────────────────────────────────────────────────
     st.markdown(
-        '<div class="section-title">Monthly Volume by Sport (hours)</div>',
+        '<div class="section-title">Monthly Volume by Sport (minutes)</div>',
         unsafe_allow_html=True,
     )
     all_types = list(SPORT_COLORS.keys())
     vol_m = (
         df_all[df_all["sport_type"].isin(all_types)]
-        .groupby(["month_str", "sport_type"])["duration_h"]
+        .groupby(["month_str", "sport_type"])["duration_min"]
         .sum().reset_index().sort_values("month_str")
     )
     if not vol_m.empty:
-        THRESHOLD = 0.3
-        vol_m["text_label"] = vol_m["duration_h"].apply(
-            lambda v: f"{v:.1f}h" if v >= THRESHOLD else ""
+        THRESHOLD_MIN = 10   # hide label for sessions under 10 minutes
+        vol_m["text_label"] = vol_m["duration_min"].apply(
+            lambda v: fmt_duration(v) if v >= THRESHOLD_MIN else ""
         )
         fig_bar_vol = px.bar(
-            vol_m, x="month_str", y="duration_h", color="sport_type",
+            vol_m, x="month_str", y="duration_min", color="sport_type",
             color_discrete_map=SPORT_COLORS,
             text="text_label",
-            labels={"month_str": "", "duration_h": "Hours", "sport_type": ""},
+            labels={"month_str": "", "duration_min": "Minutes", "sport_type": ""},
         )
         fig_bar_vol.update_traces(textposition="inside", textfont_size=9)
         fig_bar_vol.update_xaxes(categoryorder="category ascending", tickangle=-30)
         apply_base_layout(fig_bar_vol, height=340)
         st.plotly_chart(fig_bar_vol, use_container_width=True)
-        figs.append(("Monthly Volume by Sport (hours)", fig_bar_vol))
+        figs.append(("Monthly Volume by Sport (min)", fig_bar_vol))
     else:
         st.plotly_chart(empty_fig(), use_container_width=True)
 

@@ -112,42 +112,43 @@ def donut_goal(
     return fig
 
 
+def fmt_duration(minutes: float) -> str:
+    """Formats a duration in minutes as a readable string.
+    < 60 min  → '48m'
+    >= 60 min → '1h30m' or '2h'
+    """
+    if minutes is None or (isinstance(minutes, float) and np.isnan(minutes)):
+        return "N/A"
+    total = int(round(minutes))
+    if total < 60:
+        return f"{total}m"
+    h = total // 60
+    m = total % 60
+    return f"{h}h{m}m" if m else f"{h}h"
+
+
 def _pdf_download_button(
     title: str,
     d_start: str,
     d_end: str,
     kpis: list,
-    figs: list,
-    key_prefix: str,
+    figs: list = None,       # accepted for API compatibility, not used
+    key_prefix: str = "",
     accent_hex: str = "#FC4C02",
 ) -> None:
-    """Lazy PDF generation: only calls kaleido when the user clicks Generate.
-    Stores bytes in session_state to survive reruns without regenerating.
-    """
+    """Single-click PDF download — generates instantly (no kaleido)."""
     from utils.pdf import build_pdf
-    ss_key = f"_pdf_bytes_{key_prefix}"
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        if st.button("📄 Generate PDF Report", key=f"btn_gen_{key_prefix}"):
-            with st.spinner("Rendering charts and building PDF…"):
-                try:
-                    st.session_state[ss_key] = build_pdf(
-                        title, d_start, d_end, kpis, figs, accent_hex=accent_hex,
-                    )
-                    st.success("PDF ready — click Download below.")
-                except Exception as exc:
-                    st.error(f"PDF generation failed: {exc}")
-                    st.session_state[ss_key] = None
-    with c2:
-        pdf_data = st.session_state.get(ss_key)
-        if pdf_data:
-            st.download_button(
-                label="⬇ Download PDF Report",
-                data=pdf_data,
-                file_name=f"{key_prefix}_{d_start}_{d_end}.pdf",
-                mime="application/pdf",
-                key=f"dl_{key_prefix}",
-            )
+    try:
+        pdf_bytes = build_pdf(title, d_start, d_end, kpis, accent_hex=accent_hex)
+        st.download_button(
+            label="⬇ Download PDF Report",
+            data=pdf_bytes,
+            file_name=f"{key_prefix}_{d_start}_{d_end}.pdf",
+            mime="application/pdf",
+            key=f"dl_{key_prefix}",
+        )
+    except Exception as exc:
+        st.error(f"Could not generate PDF: {exc}")
 
 
 _SE_BRAZIL_LAT = -23.5505   # São Paulo — default map center

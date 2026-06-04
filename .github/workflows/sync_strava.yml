@@ -1,0 +1,64 @@
+name: Sync Strava Data
+
+# ─── Triggers ─────────────────────────────────────────────────────────────────
+on:
+  schedule:
+    # 06:00 Brasília Time (UTC-3) = 09:00 UTC — captures previous day activities
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    # Manual run available via GitHub UI → Actions → "Sync Strava Data" → Run workflow
+
+# ─── Permissions ──────────────────────────────────────────────────────────────
+permissions:
+  contents: write   # Required to commit the updated strava.db back to the repo
+
+# ─── Job ──────────────────────────────────────────────────────────────────────
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the main branch (this is the branch used for the deploy)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # 2. Python — minimal version for extract_load.py
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Only the packages extract_load.py actually needs
+      - name: Install pipeline dependencies
+        run: pip install requests python-dotenv
+
+      # 4. Run the ELT pipeline — secrets come from GitHub repo → Settings → Secrets
+      #    Required secrets:
+      #      STRAVA_CLIENT_ID      — app client ID (permanent)
+      #      STRAVA_CLIENT_SECRET  — app client secret (permanent)
+      #      STRAVA_REFRESH_TOKEN  — long-lived refresh token (permanent)
+      #      STRAVA_ACCESS_TOKEN   — short-lived; refreshed automatically at startup
+      - name: Run Strava extraction pipeline
+        env:
+          STRAVA_CLIENT_ID:     ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
+          STRAVA_ACCESS_TOKEN:  ${{ secrets.STRAVA_ACCESS_TOKEN }}
+        run: python extract_load.py
+
+      # 5. Commit and push only if the database actually changed (new activities added)
+      #    [skip ci] prevents this commit from triggering another workflow run
+      - name: Commit updated database
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/strava.db
+          if git diff --staged --quiet; then
+            echo "No new activities — nothing to commit."
+          else
+            git commit -m "chore: sync Strava data $(date -u +%Y-%m-%d) [skip ci]"
+            git push origin main
+            echo "Database updated and pushed."
+          fi
